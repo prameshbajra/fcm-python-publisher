@@ -9,14 +9,15 @@ print('PROJECT ID: ', app.project_id)
 
 message = messaging.MulticastMessage(
     data={
-        'location': 'Hamburg, Germany',
-        'company': 'TelQ',
-        'app': 'money_sms_app',
-        'destination': '+9779841623204',
-        'text': 'Hey there. This is MO testing sample.'
+        'testId': '995971',
+        'destination': '977981345782',
+        'text': 'TP-5971',
+        'simSlot': '0',
+        'simId': 'SimOne',
+        'type': 'sentSms'
     },
     tokens=[
-        'dlLfrfJ2SpCc5VsN1P-PEU:APA91bF_wUMSWTr5IB45cqhdJTF6KRl_Krcd0Jypc-bkKuq7BbE1tsS-gIy8F1sldJEqocppurMegAqdrGil7R4nPk1ZXsDBHuczZ7d_lV5SpHEqKhAq-fXRO494gTVUlsuXAolioJFR',
+        'cGpJ-f5AR5ez8t7nP87gVr:APA91bGjyom_rbN_0JBTMZDL5etebyKS0p5k43pm8FukUL1IIqokUaQ9AmHuiF4nu39ZOo60iHdJ3hPIcPO0nC9nhv-hzMZTddohcqiWdRBY3I2LBEFxxNxHgz4mW8tcTWnm3EXN89nQ',
     ])
 
 message_response = messaging.send_multicast(multicast_message=message)
