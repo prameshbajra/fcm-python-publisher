@@ -22,57 +22,62 @@ except Exception as e:
     exit(1)
 
 # ─────────────────────────────────────────────────────
-# 📦 Create Messaging Tasks (One Per Message)
+# 📦 Create Push Notification Tasks
 # ─────────────────────────────────────────────────────
-print("\n🛠️ Building individual messages...")
+print("\n🛠️ Building notification messages...")
 
 tasks = []
 
 try:
-    for i in range(100, 101):
-        message = messaging.Message(
-            data={
-                'testId': f'{i}335971',
-                'destination': '+4916092482967',
-                'text': f'{i}',
-                'simSlot': '0',
-                'simId': 'SimOne',
-                'type': 'sentSms'
-            },
-            token='eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ7XCJ1c2VySWRcIjoxMTI2MzI2LFwicm9sZVwiOlwiTU9ORVlfU01TX1VTRVJcIn0iLCJpc3MiOiJpZGVudGl0eSIsImlhdCI6MTc0ODYwOTg4NiwiZXhwIjoxNzQ5MjE0Njg2fQ.fUB-1XDiXW35ly3yeEYpF5B7ICbBxwemj9Ldws8sw7ZMLJ5otmdd9kN46Jz_VwJQBbMlfHQHUT-QOrA7QszHsH_qH0lLfEIHrxsR95JAhDZ3cSf-6GivWyy5DyNYFhgfneCe8saUOzzm2C6UAAm37knY-mtyb4fx4GMEP05BUWqsTBFhfAU7XTa7UoJN9LcUI1J_C7_0AqVnnpatLjZ7SAb-UNojt949VeOcJkeIkgpFwMqq4kDFLWuVgNiIaBQpAbolruG4DLniAfQ9tQUBqBGDZpZrt_FJuJP2oXDS48gMfZEg45te4mIpM4OA__B6qt4udGPm4JMpjmrjLMu-TA',
+    for i in range(1, 2):  # Adjusted range to send only 1 notification
+        notification = messaging.Notification(
+            title=f"🔥 Alert #{i}",
+            body=f"This is a push notification #{i}",
+            image="https://example.com/image.png"  # Optional
         )
+
+        message = messaging.Message(
+            notification=notification,
+            data={},
+            token='ePy3jW91RW26AVZ1ajOWVv:APA91bGzeewZnCOz1rtK-dvQLG1xT6iQAstGeDZIzNp4kvY5nZzcJlS8iKVZZH0HsK-Nr3ZdzQFRZqJbjGbcQWMxToRHUVc0zc0H_JJ5AfvLW6-0FxyEjtY',
+        )
+
         tasks.append((i, message))
-        print(f"📝 Prepared message {i} with testId {i}335971")
+        print(f"📝 Prepared notification {i}")
 
 except Exception as e:
-    print("❌ Error while preparing messages.")
+    print("❌ Error while preparing notifications.")
     traceback.print_exc()
     exit(1)
 
 # ─────────────────────────────────────────────────────
-# 🚀 Define Message Sender Function
+# 🚀 Define Notification Sender Function
 # ─────────────────────────────────────────────────────
-def send_message(index, message):
+def send_notification(index, message):
     try:
-        print(f"\n📤 Sending message {index}:")
-        print(json.dumps(message.data, indent=2))
+        print(f"\n📤 Sending notification {index}:")
+        print(json.dumps({
+            'title': message.notification.title,
+            'body': message.notification.body,
+            'data': message.data
+        }, indent=2))
 
         response = messaging.send(message)
 
-        print(f"✅ Message {index} sent successfully! Message ID: {response}")
+        print(f"✅ Notification {index} sent successfully! Message ID: {response}")
         print("-" * 50)
 
     except Exception as e:
-        print(f"❌ Error while sending message {index}:")
+        print(f"❌ Error while sending notification {index}:")
         traceback.print_exc()
 
 # ─────────────────────────────────────────────────────
-# 🧵 Send Messages Using ThreadPool (Parallel Execution)
+# 🧵 Send Notifications Concurrently
 # ─────────────────────────────────────────────────────
-print("\n⚙️ Starting concurrent message sending...")
+print("\n⚙️ Starting concurrent notification sending...")
 
 with concurrent.futures.ThreadPoolExecutor() as executor:
-    futures = [executor.submit(send_message, i, msg) for i, msg in tasks]
+    futures = [executor.submit(send_notification, i, msg) for i, msg in tasks]
     concurrent.futures.wait(futures)
 
-print("\n🎉 All messages processed.")
+print("\n🎉 All notifications processed.")
