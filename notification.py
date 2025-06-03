@@ -3,9 +3,6 @@ from firebase_admin import credentials, initialize_app, messaging
 import traceback
 import json
 
-# ─────────────────────────────────────────────────────
-# 🔐 Initialize Firebase App with Credentials
-# ─────────────────────────────────────────────────────
 print("🔐 Initializing Firebase app...")
 
 try:
@@ -21,39 +18,39 @@ except Exception as e:
     traceback.print_exc()
     exit(1)
 
-# ─────────────────────────────────────────────────────
-# 📦 Create Push Notification Tasks
-# ─────────────────────────────────────────────────────
 print("\n🛠️ Building notification messages...")
 
+device_tokens = [
+    'XXXXX',
+    'YYYYY'
+]
+
 tasks = []
+results = []  # Track success/failure info
 
 try:
-    for i in range(1, 2):  # Adjusted range to send only 1 notification
+    for idx, token in enumerate(device_tokens, start=1):
         notification = messaging.Notification(
-            title=f"🔥 Alert #{i}",
-            body=f"This is a push notification #{i}",
-            image="https://example.com/image.png"  # Optional
+            title="Money SMS - Update your app",
+            body="Your version of Money SMS is outdated. Please update it.",
         )
 
         message = messaging.Message(
             notification=notification,
             data={},
-            token='ePy3jW91RW26AVZ1ajOWVv:APA91bGzeewZnCOz1rtK-dvQLG1xT6iQAstGeDZIzNp4kvY5nZzcJlS8iKVZZH0HsK-Nr3ZdzQFRZqJbjGbcQWMxToRHUVc0zc0H_JJ5AfvLW6-0FxyEjtY',
+            token=token,
         )
 
-        tasks.append((i, message))
-        print(f"📝 Prepared notification {i}")
+        tasks.append((idx, token, message))
+        print(f"📝 Prepared notification {idx} for token ending with ...{token[-5:]}")
 
 except Exception as e:
     print("❌ Error while preparing notifications.")
     traceback.print_exc()
     exit(1)
 
-# ─────────────────────────────────────────────────────
-# 🚀 Define Notification Sender Function
-# ─────────────────────────────────────────────────────
-def send_notification(index, message):
+
+def send_notification(index, token, message):
     try:
         print(f"\n📤 Sending notification {index}:")
         print(json.dumps({
@@ -66,18 +63,25 @@ def send_notification(index, message):
 
         print(f"✅ Notification {index} sent successfully! Message ID: {response}")
         print("-" * 50)
+        return (index, token, True, response)
 
     except Exception as e:
         print(f"❌ Error while sending notification {index}:")
         traceback.print_exc()
+        return (index, token, False, str(e))
 
-# ─────────────────────────────────────────────────────
-# 🧵 Send Notifications Concurrently
-# ─────────────────────────────────────────────────────
+
 print("\n⚙️ Starting concurrent notification sending...")
 
 with concurrent.futures.ThreadPoolExecutor() as executor:
-    futures = [executor.submit(send_notification, i, msg) for i, msg in tasks]
-    concurrent.futures.wait(futures)
+    futures = [executor.submit(send_notification, i, token, msg) for i, token, msg in tasks]
+    for future in concurrent.futures.as_completed(futures):
+        results.append(future.result())
+
+
+print("\n📋 Notification Delivery Summary:")
+for index, token, success, info in results:
+    status = "✅ SUCCESS" if success else "❌ FAILED"
+    print(f"{status} - Token : {token} | Info: {info}")
 
 print("\n🎉 All notifications processed.")
